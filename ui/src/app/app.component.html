@@ -1,0 +1,269 @@
+<div class="app-container">
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="app-title">
+      <span class="app-icon">🗒️</span>
+      <div class="app-title-text">
+        <div class="app-main-title">CloudNotes</div>
+        <div class="app-sub-title">Tes notes, bien organisées</div>
+      </div>
+    </div>
+    <div class="app-tabs">
+      <button
+        class="tab-button"
+        [class.active]="activeTab === 'list'"
+        (click)="setTab('list')"
+      >
+        📝 Notes
+      </button>
+      <button
+        class="tab-button"
+        [class.active]="activeTab === 'add'"
+        (click)="setTab('add')"
+      >
+        ➕ Nouvelle note
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="app-main">
+    <div class="status-bar" *ngIf="loading || error">
+      <span *ngIf="loading">Chargement...</span>
+      <span *ngIf="error" class="error">{{ error }}</span>
+    </div>
+
+    <!-- ONGLET AJOUT NOTE -->
+    <section *ngIf="activeTab === 'add'" class="panel add-panel">
+      <h2>Nouvelle note</h2>
+
+      <div class="form-group">
+        <label for="newTitle">Titre</label>
+        <input
+          id="newTitle"
+          type="text"
+          [(ngModel)]="newTitle"
+          placeholder="Titre de la note"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="newCategory">Dossier / Catégorie</label>
+        <input
+          id="newCategory"
+          type="text"
+          [(ngModel)]="newCategory"
+          placeholder="Ex: Perso, Travail, Cours..."
+          list="categorySuggestions"
+        />
+        <datalist id="categorySuggestions">
+          <option *ngFor="let cat of categories" [value]="cat"></option>
+        </datalist>
+      </div>
+
+      <div class="form-group">
+        <label for="newContent">Contenu</label>
+        <textarea
+          id="newContent"
+          rows="10"
+          [(ngModel)]="newContent"
+          placeholder="Écris ta note ici..."
+        ></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="primary" (click)="createNote()">
+          Créer la note
+        </button>
+      </div>
+    </section>
+
+    <!-- ONGLET LISTE + DÉTAIL -->
+    <section *ngIf="activeTab === 'list'" class="panel split-panel">
+      <!-- SIDEBAR GAUCHE -->
+      <div class="notes-sidebar">
+        <!-- Recherche -->
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Rechercher une note..."
+          />
+        </div>
+
+        <!-- Gestion des dossiers -->
+        <div class="category-manager">
+          <div class="manager-header">
+            <span>Dossiers</span>
+          </div>
+          <div class="category-input">
+            <input
+              type="text"
+              [(ngModel)]="newUserCategory"
+              placeholder="Nouveau dossier..."
+            />
+            <button class="icon-button add" (click)="addUserCategory()">
+              +
+            </button>
+          </div>
+          <div class="category-chips">
+            <button
+              class="chip"
+              [class.active]="selectedCategory === 'ALL'"
+              (click)="setCategoryFilter('ALL')"
+            >
+              Tous
+            </button>
+            <button
+              class="chip"
+              *ngFor="let cat of userCategories"
+              [class.active]="selectedCategory === cat"
+              (click)="setCategoryFilter(cat)"
+              [ngStyle]="{
+                'border-color': getCategoryColor(cat),
+                'background':
+                  selectedCategory === cat
+                    ? getCategoryColor(cat) + '22'
+                    : 'rgba(255,255,255,0.7)',
+                color:
+                  selectedCategory === cat
+                    ? getCategoryColor(cat)
+                    : 'var(--text-muted)'
+              }"
+            >
+              <span class="chip-label">{{ cat }}</span>
+              <button
+                class="chip-delete"
+                (click)="removeUserCategory(cat); $event.stopPropagation()"
+              >
+                ✕
+              </button>
+            </button>
+          </div>
+        </div>
+
+        <!-- Liste des notes -->
+        <div class="notes-list">
+          <div class="list-header">
+            <h3>Notes</h3>
+            <span class="count">{{ filteredNotes.length }} note(s)</span>
+          </div>
+
+          <div class="notes-scroll">
+            <div
+              class="note-item"
+              *ngFor="let note of filteredNotes"
+              [class.selected]="isSelected(note)"
+              (click)="selectNote(note)"
+            >
+              <div class="note-item-header">
+                <div class="note-title">
+                  {{ note.title || '(Sans titre)' }}
+                </div>
+                <button
+                  class="icon-button danger-text"
+                  (click)="deleteFromList(note, $event)"
+                  title="Supprimer cette note"
+                >
+                  🗑
+                </button>
+              </div>
+
+              <div class="note-meta">
+                <span
+                  class="note-category"
+                  *ngIf="note.category"
+                  [ngStyle]="{
+                    'border-color': getCategoryColor(note.category),
+                    'background': getCategoryColor(note.category) + '22',
+                    color: getCategoryColor(note.category)
+                  }"
+                >
+                  {{ note.category }}
+                </span>
+                <span class="note-date">
+                  {{ note.updatedAt | date: 'short' }}
+                </span>
+              </div>
+
+              <div class="note-preview">
+                {{ note.content | slice: 0: 80
+                }}<span *ngIf="note.content.length > 80">...</span>
+              </div>
+            </div>
+
+            <div class="empty" *ngIf="filteredNotes.length === 0">
+              Aucune note ne correspond à ta recherche.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DÉTAIL DROITE -->
+      <div class="note-detail" *ngIf="selectedNote; else noSelection">
+        <div class="detail-header">
+          <div>
+            <div class="detail-label">Dernière modification</div>
+            <div class="detail-date">
+              {{ selectedNote?.updatedAt | date: 'short' }}
+              <span
+                *ngIf="selectedNote?.category"
+                class="detail-category"
+                [ngStyle]="{
+                  color: getCategoryColor(selectedNote?.category || undefined)
+                }"
+              >
+                • {{ selectedNote?.category }}
+              </span>
+            </div>
+          </div>
+          <button class="danger" (click)="deleteSelectedNote()">
+            Supprimer
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label for="editTitle">Titre</label>
+          <input
+            id="editTitle"
+            type="text"
+            [(ngModel)]="editTitle"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editCategory">Dossier</label>
+          <input
+            id="editCategory"
+            type="text"
+            [(ngModel)]="editCategory"
+            placeholder="Ex: Perso, Travail, Cours..."
+            list="categorySuggestions"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editContent">Contenu</label>
+          <textarea
+            id="editContent"
+            rows="14"
+            [(ngModel)]="editContent"
+          ></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="primary" (click)="saveSelectedNote()">
+            Enregistrer
+          </button>
+        </div>
+      </div>
+
+      <ng-template #noSelection>
+        <div class="note-detail empty-detail">
+          Sélectionne une note dans la liste pour l'afficher et l’éditer.
+        </div>
+      </ng-template>
+    </section>
+  </main>
+</div>
