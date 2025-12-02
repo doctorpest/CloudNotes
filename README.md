@@ -290,4 +290,12 @@ CloudNotes est une application complète respectant :
 - Une stack full cloud avec LocalStack  
 - Une UI soignée & ergonomique  
 
-C’est une base **solide**, **moderne** et **professionnelle**.
+C’est une base **solide**, **moderne** et **professionnelle**.    
+
+
+---
+
+# 📚 Auteurs    
+
+- EL Anouar Ayar Allah
+- Mikou Elmamoune
