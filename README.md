@@ -18,7 +18,8 @@ L’application permet :
 ✔️ Supprimer une note  
 ✔️ Lister les notes  
 ✔️ Catégories personnalisées  
-✔️ Recherche intégrée  
+✔️ Recherche intégrée    
+✔️ Exporter une note en PDF (génération server-side avec PDFKit)
 ✔️ UI moderne & responsive  
 ✔️ Backend organisé en **Domain / Application / Infrastructure** selon les principes POO avancée  
 
@@ -58,7 +59,8 @@ L’interface utilisateur permet :
 - Création d’une note ✔️  
 - Modification d’une note ✔️  
 - Suppression d’une note ✔️  
-- UI moderne type “Apple Notes” ✔️  
+- Édition instantanée ✔️
+- Bouton Export PDF pour chaque note ✔️    
 
 Toutes les actions passent par des appels HTTP vers le backend.
 
@@ -73,6 +75,7 @@ Le backend suit une architecture propre séparée en trois couches :
 - Entité `Note`
 - Value Object `NoteId`
 - Interface `NoteRepository`
+- Interface pour l'export PDF `NotePdfExporter`
 
 ### 🧩 Application
 
@@ -83,6 +86,7 @@ Chaque action du système est un **use case** :
 - `ListNotesUseCase`
 - `GetNoteUseCase`
 - `DeleteNoteUseCase`
+- `ExportNotePdfUseCase`
 
 Ces use cases ne dépendent **d’aucune technologie**, seulement du domaine.
 
@@ -90,6 +94,7 @@ Ces use cases ne dépendent **d’aucune technologie**, seulement du domaine.
 
 - `NoteController` (API REST)
 - `NoteDynamoDbRepository` (implémentation du repository)
+- `PdfKitNotePdfExporter` (implémentation PDFKit)    
 - Configuration AWS / LocalStack
 - Module NestJS
 
@@ -115,6 +120,25 @@ Table utilisée :
 Table: CloudNotesNotes
 Partition key: id (string)
 ```
+
+
+---
+
+# 📄 4. Export PDF
+
+CloudNotes supporte l’**export d’une note en PDF** directement depuis l’UI, grâce à :   
+
+- Un use case ExportNotePdfUseCase  
+- Un service PDFKit personnalisant le rendu
+- Une route REST dédié     
+
+Endpoint API :
+
+```
+GET /notes/:id/export/pdf
+```
+
+Retourne un fichier PDF Content-Type: application/pdf.
 
 ---
 
@@ -207,6 +231,7 @@ api/
  │   │   ├── note.entity.ts
  │   │   ├── note-id.value-object.ts
  │   │   └── note.repository.ts
+ │   │   └── note-pdf-exporter.ts 
  │   │
  │   ├── application/
  │   │   └── note/use-cases/
@@ -214,7 +239,8 @@ api/
  │   │       ├── list-notes.usecase.ts
  │   │       ├── get-note.usecase.ts
  │   │       ├── update-note.usecase.ts
- │   │       └── delete-note.usecase.ts
+ │   │       ├── delete-note.usecase.ts
+ │   │       └── export-note-pdf.usecase.ts
  │   │   └── note/dto/
  │   │       ├── create-note.dto.ts
  │   │       ├── update-note.dto.ts
@@ -222,6 +248,7 @@ api/
  │   └── infrastructure/
  │       ├── api/note.controller.ts
  │       ├── persistence/dynamodb/note-dynamodb.repository.ts
+ │       ├── pdf/pdfkit-note-pdf-exporter.ts
  │       
  │
  └── Dockerfile
@@ -248,7 +275,8 @@ Construit avec :
 - Catégories personnalisées  
 - Vue liste + vue détail  
 - Edition inline  
-- Optimisé pour Desktop  
+- Optimisé pour Desktop
+- Export PDF intégré    
 
 ---
 
