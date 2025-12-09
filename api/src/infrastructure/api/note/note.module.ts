@@ -8,6 +8,9 @@ import { NoteRepository } from '../../../domain/note/note.repository';
 // import { NoteInMemoryRepository } from '../../persistence/in-memory/note-in-memory.repository';
 import { NoteDynamoDbRepository } from '../../persistence/dynamodb/note-dynamodb.repository';
 import { UpdateNoteUseCase } from 'src/application/note/use-cases/update-note.usecase';
+import { NotePdfExporter } from '../../../domain/note/note-pdf-exporter';
+import { PdfKitNotePdfExporter } from '../../pdf/pdfkit-note-pdf-exporter';
+import { ExportNotePdfUseCase } from '../../../application/note/use-cases/export-note-pdf.usecase';
 
 @Module({
   controllers: [NoteController],
@@ -21,6 +24,11 @@ import { UpdateNoteUseCase } from 'src/application/note/use-cases/update-note.us
     GetNoteUseCase,
     DeleteNoteUseCase,
     UpdateNoteUseCase,
+    ExportNotePdfUseCase,
+    {
+      provide: NotePdfExporter,
+      useClass: PdfKitNotePdfExporter,
+    },
   ],
 })
 export class NoteModule {}

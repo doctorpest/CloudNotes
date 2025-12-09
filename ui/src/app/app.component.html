@@ -253,10 +253,15 @@
         </div>
 
         <div class="actions">
+          <button class="secondary" (click)="exportSelectedNoteAsPdf()">
+            Exporter en PDF
+          </button>
           <button class="primary" (click)="saveSelectedNote()">
             Enregistrer
           </button>
         </div>
+
+
       </div>
 
       <ng-template #noSelection>

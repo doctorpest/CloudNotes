@@ -318,4 +318,14 @@ export class AppComponent implements OnInit {
   isSelected(note: Note): boolean {
     return this.selectedNote?.id === note.id;
   }
+
+
+  /* --------------------------------- Export PDF --------------------------------- */
+
+  exportSelectedNoteAsPdf() {
+    if (!this.selectedNote) return;
+    const url = `http://localhost:3000/notes/${this.selectedNote.id}/export/pdf`;
+    window.open(url, '_blank');
+  }
+  
 }

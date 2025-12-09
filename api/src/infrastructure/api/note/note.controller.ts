@@ -1,12 +1,22 @@
-import { Body, Controller, Get, Param, Post, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Delete,
+  Patch,
+  Res,
+} from '@nestjs/common';
 import { CreateNoteUseCase } from '../../../application/note/use-cases/create-note.usecase';
 import { ListNotesUseCase } from '../../../application/note/use-cases/list-notes.usecase';
 import { GetNoteUseCase } from '../../../application/note/use-cases/get-note.usecase';
 import { DeleteNoteUseCase } from '../../../application/note/use-cases/delete-note.usecase';
 import { CreateNoteDto } from '../../../application/note/dto/create-note.dto';
-import { Patch } from '@nestjs/common';
 import { UpdateNoteDto } from '../../../application/note/dto/update-note.dto';
 import { UpdateNoteUseCase } from '../../../application/note/use-cases/update-note.usecase';
+import { ExportNotePdfUseCase } from '../../../application/note/use-cases/export-note-pdf.usecase';
+import { Response } from 'express';
 
 @Controller('notes')
 export class NoteController {
@@ -16,6 +26,7 @@ export class NoteController {
     private readonly getNote: GetNoteUseCase,
     private readonly deleteNote: DeleteNoteUseCase,
     private readonly updateNote: UpdateNoteUseCase, // 👈 ajouté
+    private readonly exportNotePdf: ExportNotePdfUseCase,
   ) {}
 
   @Post()
@@ -74,5 +85,16 @@ export class NoteController {
   async delete(@Param('id') id: string) {
     await this.deleteNote.execute(id);
     return { deleted: true };
+  }
+
+  @Get(':id/export/pdf')
+  async exportPdf(@Param('id') id: string, @Res() res: Response) {
+    const { filename, buffer } = await this.exportNotePdf.execute(id);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', buffer.length);
+
+    return res.send(buffer);
   }
 }
