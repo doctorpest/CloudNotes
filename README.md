@@ -157,9 +157,10 @@ Installer :
 ## 🏁 1. Cloner le projet
 
 ```bash
-git clone <ton-repo>
+git clone https://github.com/doctorpest/CloudNotes.git
 cd CloudNotes
 ```
+Ou télécharger le code zip.   
 
 ---
 
