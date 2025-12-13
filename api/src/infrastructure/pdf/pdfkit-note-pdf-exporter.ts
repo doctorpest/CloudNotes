@@ -27,24 +27,13 @@ export class PdfKitNotePdfExporter implements NotePdfExporter {
       const marginLeft = doc.page.margins.left;
       const marginRight = doc.page.margins.right;
 
-      /* ---------- FOND AESTHETIC GLOBAL ---------- */
-
       // Fond lavande très doux
-      doc
-        .save()
-        .rect(0, 0, pageWidth, pageHeight)
-        .fill('#F5F3FF') // lavande clair
-        .restore();
+      doc.save().rect(0, 0, pageWidth, pageHeight).fill('#F5F3FF').restore();
 
       // Bande verticale à gauche (style carnet)
       const bandWidth = 32;
-      doc
-        .save()
-        .rect(0, 0, bandWidth, pageHeight)
-        .fill('#E0E7FF') // bleu lavande
-        .restore();
+      doc.save().rect(0, 0, bandWidth, pageHeight).fill('#E0E7FF').restore();
 
-      // “perforations” façon carnet
       for (let y = 40; y < pageHeight - 40; y += 28) {
         doc
           .save()
@@ -60,7 +49,6 @@ export class PdfKitNotePdfExporter implements NotePdfExporter {
       const cardY = 70;
       const cardHeight = pageHeight - cardY - 70;
 
-      // Ombre légère
       doc
         .save()
         .rect(cardX + 3, cardY + 4, cardWidth, cardHeight)
@@ -76,7 +64,6 @@ export class PdfKitNotePdfExporter implements NotePdfExporter {
 
       /* ---------- HEADER DANS LA CARTE ---------- */
 
-      // Titre de la note – centré
       let cursorY = cardY + 26;
 
       doc
@@ -89,7 +76,6 @@ export class PdfKitNotePdfExporter implements NotePdfExporter {
 
       cursorY = doc.y + 6;
 
-      // Petite ligne colorée sous le titre
       const titleAccentWidth = 90;
       const titleAccentX = cardX + (cardWidth - titleAccentWidth) / 2;
       doc
@@ -103,7 +89,6 @@ export class PdfKitNotePdfExporter implements NotePdfExporter {
 
       cursorY += 14;
 
-      // Catégorie en pill + métadonnées
       const created = note.createdAt.toLocaleString();
       const updated = note.updatedAt.toLocaleString();
 
@@ -120,7 +105,7 @@ export class PdfKitNotePdfExporter implements NotePdfExporter {
         doc
           .save()
           .roundedRect(chipX, chipY, chipWidth, chipHeight, 999)
-          .fill('#FCE7F3') // rose pastel
+          .fill('#FCE7F3')
           .restore();
 
         // Texte pill
@@ -156,15 +141,12 @@ export class PdfKitNotePdfExporter implements NotePdfExporter {
 
       cursorY = doc.y + 18;
 
-      /* ---------- EFFET “PAGE LIGNÉE” POUR LE CONTENU ---------- */
-
       const contentPaddingX = 28;
       const contentLeft = cardX + contentPaddingX;
       const contentRight = cardX + cardWidth - contentPaddingX;
       const contentTop = cursorY + 4;
       const contentBottom = cardY + cardHeight - 32;
-
-      // Lignes horizontales
+      /* ---------- LIGNES DE LA ZONE DE TEXTE ---------- */
       doc.save().lineWidth(0.4).strokeColor('#E5E7EB');
       for (let y = contentTop; y < contentBottom; y += 16) {
         doc.moveTo(contentLeft, y).lineTo(contentRight, y).stroke();
@@ -205,7 +187,7 @@ export class PdfKitNotePdfExporter implements NotePdfExporter {
           align: 'center',
         });
 
-      /* ---------- FOOTER GLOBAL ---------- */
+      /* ---------- FOOTER ---------- */
 
       doc
         .fontSize(8)

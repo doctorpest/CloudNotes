@@ -103,11 +103,11 @@ export class AppComponent implements OnInit {
     }
   }
 
-  // Toutes les catégories affichées pour filtres / suggestions
+  // Toutes les catégories affichées pour les suggestions
   get categories(): string[] {
     const set = new Set<string>();
 
-    // Catégories provenant des notes
+    // Catégories des notes
     this.notes.forEach((n) => {
       if (n.category && n.category.trim() !== '') {
         set.add(n.category);
@@ -122,9 +122,9 @@ export class AppComponent implements OnInit {
     );
   }
 
-  // Assigne une couleur à une catégorie si elle n’en a pas encore
+  // On assigne une couleur à une catégorie si elle n’en a pas encore
   private ensureCategoryColor(cat: string): string {
-    if (!cat) return '#9CA3AF'; // gris par défaut
+    if (!cat) return '#9CA3AF';
     if (this.categoryColors[cat]) return this.categoryColors[cat];
 
     const index = Object.keys(this.categoryColors).length;
@@ -327,5 +327,5 @@ export class AppComponent implements OnInit {
     const url = `http://localhost:3000/notes/${this.selectedNote.id}/export/pdf`;
     window.open(url, '_blank');
   }
-  
+
 }
